@@ -48,6 +48,12 @@ namespace ProjectManager.Data
             {
                 entity.ToTable("UserTokens");
             });
+
+            builder.Entity<Status>().HasData(EnumFunctions.GetModelsFromEnum<Status, StatusEnum>());
         }
+
+        public DbSet<ProjectManager.Models.Task> Task { get; set; }
+
+        public DbSet<ProjectManager.Models.Status> Status { get; set; }
     }
 }

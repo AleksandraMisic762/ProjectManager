@@ -203,3 +203,9 @@ C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\ref\ProjectManager.dl
 C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\ProjectManager.pdb
 C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\ProjectManager.genruntimeconfig.cache
 C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\ProjectManager.csproj.AssemblyReference.cache
+C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\Razor\Views\Tasks\Create.cshtml.g.cs
+C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\Razor\Views\Tasks\Delete.cshtml.g.cs
+C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\Razor\Views\Tasks\Details.cshtml.g.cs
+C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\Razor\Views\Tasks\Edit.cshtml.g.cs
+C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\Razor\Views\Tasks\Index.cshtml.g.cs
+C:\Users\HP\interviews\get\ProjectManager\obj\Debug\net5.0\Razor\Views\Tasks\AssignedTasks.cshtml.g.cs

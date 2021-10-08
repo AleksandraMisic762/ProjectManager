@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProjectManager.Data;
 
 namespace ProjectManager.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211007192046_add model classes")]
+    partial class addmodelclasses
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -231,36 +233,6 @@ namespace ProjectManager.Migrations
                     b.ToTable("Project");
                 });
 
-            modelBuilder.Entity("ProjectManager.Models.Status", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Status");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 0,
-                            Name = "NEW"
-                        },
-                        new
-                        {
-                            Id = 1,
-                            Name = "IN_PROGRESS"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "FINISHED"
-                        });
-                });
-
             modelBuilder.Entity("ProjectManager.Models.Task", b =>
                 {
                     b.Property<int>("TaskId")
@@ -283,7 +255,7 @@ namespace ProjectManager.Migrations
                     b.Property<int?>("ProjectCode")
                         .HasColumnType("int");
 
-                    b.Property<int?>("StatusId")
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("TaskId");
@@ -291,8 +263,6 @@ namespace ProjectManager.Migrations
                     b.HasIndex("AssigneeId");
 
                     b.HasIndex("ProjectCode");
-
-                    b.HasIndex("StatusId");
 
                     b.ToTable("Task");
                 });
@@ -371,15 +341,9 @@ namespace ProjectManager.Migrations
                         .WithMany()
                         .HasForeignKey("ProjectCode");
 
-                    b.HasOne("ProjectManager.Models.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId");
-
                     b.Navigation("Assignee");
 
                     b.Navigation("Project");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("ProjectManager.Models.User", b =>

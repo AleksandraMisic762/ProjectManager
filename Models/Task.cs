@@ -13,7 +13,7 @@ namespace ProjectManager.Models
         public int TaskId { get; set; }
         public Status Status { get; set; }
         private decimal _progress;
-        
+        [DataType(DataType.Date)]
         public DateTime Deadline { get; set; }
         public string Description { get; set; }
 
@@ -25,10 +25,10 @@ namespace ProjectManager.Models
             }
             set
             {
-                if (value >= 0 && value.CompareTo(100.00) < 0)
-                {
+                //if (value >= 0 && value.CompareTo(100.00) < 0)
+                //{
                     _progress = value;
-                }
+                //}
             }
         }
 

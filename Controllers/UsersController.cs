@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using ProjectManager.ViewModels;
 
 namespace ProjectManager.Controllers
 {
@@ -103,7 +104,6 @@ namespace ProjectManager.Controllers
                     foreach (var error in result.Errors)
                     {
                         ModelState.AddModelError(string.Empty, error.Description);
-                        ViewBag.ErrorMessages = ViewBag.ErrorMessages + error.Description;
                     }
                     return Create();
                 }       
@@ -124,38 +124,49 @@ namespace ProjectManager.Controllers
             {
                 return NotFound();
             }
-            return View(user);
+            var model = new UpdateUserViewModel()
+            {
+                Email = user.Email,
+                UserName = user.UserName,
+                FirstName = user.FirstName,
+                Surname = user.Surname,
+                PhoneNumber = user.PhoneNumber
+            };
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id,  ProjectManager.Models.User user)
+        public async Task<IActionResult> Edit(UpdateUserViewModel model)
         {
-            if (id != user.Id)
+            var user = await _userManager.FindByNameAsync(model.UserName);
+            if (user == null)
             {
-                return NotFound();
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    await _userManager.UpdateAsync(user);
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserExists(user.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return View();
             }
-            return View(user);
+
+            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+ 
+            user.Email = model.Email;
+            user.UserName = model.UserName;
+            user.FirstName = model.FirstName;
+            user.Surname = model.Surname;
+            user.PhoneNumber = model.PhoneNumber;
+
+            var setPhoneResult = await _userManager.UpdateAsync(user);
+
+            if (!setPhoneResult.Succeeded)
+                {
+                   
+                    return View();
+                }
+            
+            return View();
         }
 
         // GET: Users/Delete/5
@@ -243,7 +254,6 @@ namespace ProjectManager.Controllers
             }
             return RedirectToAction("Index");
         }
-
 
         private bool UserExists(string id)
         {

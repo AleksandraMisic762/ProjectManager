@@ -50,6 +50,7 @@ namespace ProjectManager.Data
             });
 
             builder.Entity<Status>().HasData(EnumFunctions.GetModelsFromEnum<Status, StatusEnum>());
+            builder.Entity<Project>().HasMany(t => t.Tasks).WithOne(t => t.Project).OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<ProjectManager.Models.Task> Task { get; set; }

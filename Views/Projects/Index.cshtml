@@ -25,9 +25,14 @@
                 @Html.DisplayFor(modelItem => item.ProjectName)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.ProjectCode">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ProjectCode">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ProjectCode">Delete</a>
+
+                <a asp-action="Details" asp-route-id="@item.ProjectCode">Details</a> 
+                @if (User.IsInRole("Administrator"))
+                {
+                    <a asp-action="Edit" asp-route-id="@item.ProjectCode">Edit</a> 
+                    <a asp-action="Delete" asp-route-id="@item.ProjectCode">Delete</a>
+}
+
             </td>
         </tr>
 }

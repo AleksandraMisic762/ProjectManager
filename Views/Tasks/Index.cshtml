@@ -49,9 +49,12 @@
                 @Html.DisplayFor(modelItem => item.Progress)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.TaskId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.TaskId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.TaskId">Delete</a>
+                <a asp-action="Edit" asp-route-id="@item.TaskId">Edit</a> 
+                <a asp-action="Details" asp-route-id="@item.TaskId">Details</a>
+                @if (User.IsInRole("Administrator"))
+                {
+                    <a asp-action="Delete" asp-route-id="@item.TaskId">Delete</a>
+                }
             </td>
         </tr>
 }

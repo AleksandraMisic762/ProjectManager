@@ -24,12 +24,22 @@ namespace ProjectManager
             _userManager = userManager;
         }
 
+        [Authorize]
         // GET: Tasks
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Task.Include(t => t.Project).Include(t => t.Status).ToListAsync());
+            if (User.IsInRole("Administrator"))
+            {
+                return View(await _context.Task.Include(t => t.Project).Include(t => t.Status).ToListAsync());
+            }
+            else
+            {
+                return View(await _context.Task.Include(t => t.Project).Include(t => t.Status).Where(t => t.Assignee.UserName.Equals(User.Identity.Name)).ToListAsync());
+            }
+            
         }
 
+        [Authorize]
         // GET: Tasks/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -38,7 +48,7 @@ namespace ProjectManager
                 return NotFound();
             }
 
-            var task = await _context.Task.Include(t => t.Project).Include(t => t.Status)
+            var task = await _context.Task.Include(t => t.Project).Include(t => t.Status).Include(t => t.Assignee)
                 .FirstOrDefaultAsync(m => m.TaskId == id);
             if (task == null)
             {
@@ -48,6 +58,7 @@ namespace ProjectManager
             return View(task);
         }
 
+        [Authorize(Roles = "Administrator,ProjectManager")]
         // GET: Tasks/Create
         public IActionResult Create()
         {
@@ -57,9 +68,11 @@ namespace ProjectManager
                 Statuses = _context.Status.Select(s => s.Name),
                 Task = new Models.Task()
             };
+            ViewBag.Users = _context.Users.ToList();
             return View(model);
         }
 
+        [Authorize(Roles = "Administrator,ProjectManager")]
         // POST: Tasks/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -73,6 +86,14 @@ namespace ProjectManager
                 model.Task.Project = project;
                 var status = _context.Status.Where(s => s.Name == model.Task.Status.Name).FirstOrDefault();
                 model.Task.Status = status;
+                if(model.Task.Assignee != null && model.Task.Assignee.Id != null)
+                {
+                    var assignee = _userManager.FindByIdAsync(model.Task.Assignee.Id).Result;
+                    model.Task.Assignee = assignee;
+                } else
+                {
+                    model.Task.Assignee = null;
+                }
                 _context.Add(model.Task);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -80,6 +101,8 @@ namespace ProjectManager
             return View(model);
         }
 
+
+        [Authorize]
         // GET: Tasks/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -106,6 +129,7 @@ namespace ProjectManager
             return View(model);
         }
 
+        [Authorize]
         // POST: Tasks/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -117,17 +141,70 @@ namespace ProjectManager
             {
                 return NotFound();
             }
+            
+            var selectedUserId = "";
+            var role = "";
 
+            if (!User.IsInRole("Developer"))
+            {
+                if(model.Task.Assignee.Id == null || model.Task.Assignee.Id == "")
+                {
+                    model.Task.Assignee = null;
+                } else
+                {
+                    selectedUserId = _context.Users.AsNoTracking().Where(u => u.Id == model.Task.Assignee.Id).FirstOrDefault().Id;
+                    var roleId = _context.UserRoles.AsNoTracking()
+                            .Where(ur => ur.UserId.Equals(selectedUserId)).FirstOrDefault().RoleId;
+
+                    role = _context.Roles
+                        .Where(r => r.Id.Equals(roleId)).FirstOrDefault().Name;
+                }
+            }
+            var previousValue = _context.Task.AsNoTracking().Include("Assignee").Include("Project").Where(t => t.TaskId.Equals(id)).FirstOrDefault();
+
+            if (!previousValue.Assignee.UserName.Equals(User.Identity.Name))
+            {
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (User.IsInRole("Developer"))
+            {
+                //status, progress, description
+                model.Task.Project = previousValue.Project;
+                model.Task.Deadline = previousValue.Deadline;
+                model.Task.Assignee = previousValue.Assignee;
+            }
+            
             if (ModelState.IsValid)
             {
                 try
                 {
                     var status = _context.Status.Where(s => s.Name == model.Task.Status.Name).FirstOrDefault();
                     model.Task.Status = status;
-                    var user = await _userManager.FindByIdAsync(model.Task.Assignee.Id);
-                    model.Task.Assignee = user;
-                    _context.Update(model.Task);
-                    await _context.SaveChangesAsync();
+                    if (!User.IsInRole("Developer"))
+                    {
+                        if (model.Task.Assignee != null && model.Task.Assignee.Id != null && model.Task.Assignee.Id != "")
+                        {
+                            int count = _context.Task.Include("Assignee").Where(t => t.Assignee.Id.Equals(selectedUserId) && !t.TaskId.Equals(id)).Count();
+                            if ((role.Equals("Developer") && count < 3) || !role.Equals("Developer"))
+                            {
+                                var user = await _userManager.FindByIdAsync(model.Task.Assignee.Id);
+                                model.Task.Assignee = user;
+                            }
+                            else
+                            {
+                                throw new Exception("You cannot assign more than 3 tasks to a Developer.");
+                            }
+                        }
+                        else
+                        {
+                            model.Task.Assignee = null;
+
+                        }
+
+                        _context.Update(model.Task);
+                        await _context.SaveChangesAsync();
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -140,11 +217,22 @@ namespace ProjectManager
                         throw;
                     }
                 }
+                catch (Exception e)
+                {
+                    if (e.Message.Equals("You cannot assign more than 3 tasks to a Developer."))
+                    {
+                        ViewData["NotEditedMessage"] = e.Message;
+                        return await Edit(model.Task.TaskId);
+                    }
+
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(model);
         }
 
+        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Administrator")]
         // GET: Tasks/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -163,6 +251,7 @@ namespace ProjectManager
             return View(task);
         }
 
+        [Authorize(Roles = "Administrator")]
         // POST: Tasks/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -179,7 +268,7 @@ namespace ProjectManager
             return _context.Task.Any(e => e.TaskId == id);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> AssignedTasks()
         {
             var user = await _userManager.GetUserAsync(User);

@@ -64,6 +64,9 @@ namespace ProjectManager.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
             public string Name { get; set; }
+
+            [Display(Name = "Role")]
+            public string RoleId { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -76,13 +79,16 @@ namespace ProjectManager.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-            var role = _roleManager.FindByIdAsync(Input.Name).Result;
+            var role = _roleManager.FindByIdAsync(Input.RoleId).Result;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
                 var user = new ProjectManager.Models.User { UserName = Input.Email, Email = Input.Email };
+ 
                 var result = await _userManager.CreateAsync(user, Input.Password);
-                if (result.Succeeded)
+                var result2 = await _userManager.AddToRoleAsync(user, role.Name);
+
+                if (result.Succeeded && result2.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 

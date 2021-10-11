@@ -1,10 +1,12 @@
-﻿@model ProjectManager.ViewModels.TaskProjectStatusViewModel
+﻿@model ProjectManager.Models.Task
 
 @{
     ViewData["Title"] = "Create";
 }
 
 <h1>Create</h1>
+
+<p>@TempData["NotCreatedMessage"]</p>
 
 <h4>Task</h4>
 <hr />
@@ -13,36 +15,48 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Task.Project.ProjectCode" class="control-label"></label>
-                <select asp-for="Task.Project.ProjectCode" asp-items="@(new SelectList(Model.Projects, "ProjectCode", "ProjectName"))" class="form-control"></select>
-                <span asp-validation-for="Task.Project.ProjectCode" class="text-danger"></span>
+                <label asp-for="Project.ProjectCode" class="control-label"></label>
+                <select asp-for="Project.ProjectCode" asp-items="@(new SelectList(ViewBag.Projects, "ProjectCode", "ProjectName"))" class="form-control"></select>
+                <span asp-validation-for="Project.ProjectCode" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Task.Status.Name" class="control-label"></label>
-                <select asp-for="Task.Status.Name" asp-items="@(new SelectList(Model.Statuses))" class="form-control"></select>
-                <span asp-validation-for="Task.Status.Name" class="text-danger"></span>
+                <label asp-for="Status.Name" class="control-label"></label>
+                <select asp-for="Status.Name" asp-items="@(new SelectList(ViewBag.Statuses))" class="form-control"></select>
+                <span asp-validation-for="Status.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Task.Deadline" class="control-label"></label>
-                <input asp-for="Task.Deadline" class="form-control" />
-                <span asp-validation-for="Task.Deadline" class="text-danger"></span>
+                <label asp-for="Deadline" class="control-label"></label>
+                <input asp-for="Deadline" class="form-control" />
+                <span asp-validation-for="Deadline" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Task.Description" class="control-label"></label>
-                <input asp-for="Task.Description" class="form-control" />
-                <span asp-validation-for="Task.Description" class="text-danger"></span>
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" type="text" />
+                <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Task.Progress" class="control-label"></label>
-                <input asp-for="Task.Progress" class="form-control" />
-                <span asp-validation-for="Task.Progress" class="text-danger"></span>
+                <label asp-for="Progress" class="control-label">Progress [%]</label>
+                <input asp-for="Progress" class="form-control" />
+                <span asp-validation-for="Progress" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Task.Assignee.Id" class="control-label">Assignee</label>
-                <select asp-for="Task.Assignee.Id" asp-items="@(new SelectList(ViewBag.Users, "Id", "UserName"))" class="form-control">
+                <label asp-for="Assignee.Id" class="control-label">Assignee</label>
+                <select asp-for="Assignee.Id" class="form-control">
                     <option disabled selected>--- SELECT ---</option>
+                    @foreach (var user in ViewBag.Users)
+                    {
+                        if (user.FirstName == null && user.Surname == null)
+                        {
+                            <option value="@user.Id">@user.UserName</option>
+
+                        }else
+                        {
+                            <option value="@user.Id">@user.FirstName @user.Surname</option>
+                        }
+                        
+                    }
                 </select>
-                <span asp-validation-for="Task.Assignee.Id" class="text-danger"></span>
+                <span asp-validation-for="Assignee.Id" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

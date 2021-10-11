@@ -32,7 +32,7 @@
             @Html.DisplayNameFor(model => model.Progress)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Progress)
+            @Html.DisplayFor(model => model.Progress)%
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Project)
@@ -44,10 +44,21 @@
             @Html.DisplayNameFor(model => model.Assignee)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Assignee.UserName)
-        </dd>
+            @if (Model.Assignee == null) { 
+                <p></p>
+            }
+            else if (Model.Assignee.FirstName != null && Model.Assignee.Surname != null)
+            {
+            <p>@Model.Assignee.FirstName @Model.Assignee.Surname</p>
 
-    </dl>
+            }
+            else
+            {
+                @Html.DisplayFor(model => model.Assignee.UserName)
+            }
+            </dd>
+
+        </dl>
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model.TaskId">Edit</a> |

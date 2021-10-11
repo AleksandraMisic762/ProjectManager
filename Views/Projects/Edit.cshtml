@@ -5,6 +5,7 @@
 }
 
 <h1>Edit</h1>
+<p>@TempData["ErrorMessage"]</p>
 
 <h4>Project</h4>
 <hr />
@@ -17,6 +18,23 @@
                 <label asp-for="ProjectName" class="control-label"></label>
                 <input asp-for="ProjectName" class="form-control" />
                 <span asp-validation-for="ProjectName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Manager.UserName" class="control-label">Assignee</label>
+                <select asp-for="Manager.UserName" class="form-control">
+                @foreach (var user in ViewBag.Users)
+                {
+                    if (user.FirstName == null && user.Surname == null)
+                    {
+                        <option value="@user.UserName">@user.UserName</option>
+                    }
+                    else
+                    {
+                        <option value="@user.UserName">@user.FirstName @user.Surname</option>
+                    }
+                }
+            </select>
+                <span asp-validation-for="Manager.UserName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

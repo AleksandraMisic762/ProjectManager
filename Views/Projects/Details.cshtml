@@ -20,7 +20,13 @@
             @Html.DisplayNameFor(model => model.ProjectProgress)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ProjectProgress)
+            @Html.DisplayFor(model => model.ProjectProgress)%
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Project.Manager)
+        </dt>
+        <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.Project.Manager.UserName)
         </dd>
     </dl>
 </div>
@@ -98,16 +104,31 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.Deadline)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Description)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Progress)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Assignee.UserName)
-                </td>
-            </tr>
+
+                @if (item.Description.Split().Length > 20)
+                {
+                    <td>@string.Join(" ", item.Description.Split().Take(20)) ...</td>
+                }
+                else
+                {
+                    <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                }
+
+                    
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Progress)%
+                    </td>
+                    <td>
+                        @if (item.Assignee != null && item.Assignee.FirstName != null && item.Assignee.Surname != null)
+                        {
+                            <p>@item.Assignee.FirstName @item.Assignee.Surname</p>
+                        }
+                        else
+                        {
+                            @Html.DisplayFor(model => item.Assignee.UserName)
+                        }
+                    </td>
+                </tr>
             }
         </tbody>
     </table>

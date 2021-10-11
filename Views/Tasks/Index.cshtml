@@ -5,10 +5,14 @@
 }
 
 <h1>Index</h1>
+<p>@ViewData["ErrorMessage"]</p>
+@if (!User.IsInRole("Developer"))
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+}
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
@@ -46,7 +50,7 @@
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Progress)
+                @Html.DisplayFor(modelItem => item.Progress)%
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.TaskId">Edit</a> 

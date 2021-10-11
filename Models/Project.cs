@@ -9,9 +9,13 @@ namespace ProjectManager.Models
     {
         [Key]
         public int ProjectCode { get; set; }
-
         public string ProjectName { get; set; }
         public User Manager { get; set; }
         public IEnumerable<Task> Tasks { get; set; }
+
+        public Project()
+        {
+            Manager = new();
+        }
     }
 }

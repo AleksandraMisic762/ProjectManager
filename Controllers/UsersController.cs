@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using ProjectManager.ViewModels;
+using Microsoft.Data.SqlClient;
 
 namespace ProjectManager.Controllers
 {
@@ -139,10 +140,11 @@ namespace ProjectManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(UpdateUserViewModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.UserName);
+            var user = _userManager.Users.Where(u => u.Email.Equals(model.Email)).FirstOrDefault();
             if (user == null)
             {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+                TempData["Message"] = $"User with email: {user.Email} was not edited.";
+                return NotFound();
             }
 
             if (!ModelState.IsValid)
@@ -158,14 +160,14 @@ namespace ProjectManager.Controllers
             user.Surname = model.Surname;
             user.PhoneNumber = model.PhoneNumber;
 
-            var setPhoneResult = await _userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
 
-            if (!setPhoneResult.Succeeded)
+            if (!result.Succeeded)
                 {
-                   
-                    return View();
+                TempData["Message"] = $"User with email: {user.Email} was not edited.";
+                return View();
                 }
-            
+            TempData["Message"] = $"User with email: {user.Email} was edited successfully.";
             return View();
         }
 
@@ -189,9 +191,17 @@ namespace ProjectManager.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
-            await _userManager.DeleteAsync(user);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                await _userManager.DeleteAsync(user);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException)
+            {
+                TempData["ErrorDeleting"] = "User could not be deleted. Delete all projects and tasks User has resposibility for first.";
+                return RedirectToAction(nameof(Delete));
+            }
         }
 
         private async Task<List<string>> GetUserRoles(Models.User user)

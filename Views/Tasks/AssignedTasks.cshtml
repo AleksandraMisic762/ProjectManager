@@ -48,7 +48,7 @@
                 @Html.DisplayFor(modelItem => item.Description)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Progress)
+                @Html.DisplayFor(modelItem => item.Progress)%
             </td>
             <td>
                 @if(item.Deadline.Day - DateTime.Now.Day <= 5 && !item.Status.Name.Equals("FINISHED"))

@@ -9,6 +9,6 @@ namespace ProjectManager.ViewModels
     {
         public Models.Project Project { get; set; }
         public IEnumerable<Models.Task> Tasks { get; set; }
-        public decimal ProjectProgress { get; set; }
+        public int ProjectProgress { get; set; }
     }
 }

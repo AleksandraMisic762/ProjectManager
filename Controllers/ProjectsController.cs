@@ -18,7 +18,8 @@ namespace ProjectManager.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<Models.User> _userManager;
 
-        public ProjectsController(ApplicationDbContext context, UserManager<Models.User> userManager)
+        public ProjectsController(ApplicationDbContext context, 
+            UserManager<Models.User> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -40,8 +41,8 @@ namespace ProjectManager.Controllers
                 return NotFound();
             }
 
-            var project = await _context.Project
-                .FirstOrDefaultAsync(m => m.ProjectCode == id);
+            var project = _context.Project.Include(p => p.Manager).Where(p => p.ProjectCode == id).FirstOrDefault();
+
             if (project == null)
             {
                 return NotFound();
@@ -53,7 +54,7 @@ namespace ProjectManager.Controllers
             {
                 Project = project,
                 Tasks = tasks,
-                ProjectProgress = tasks.Select(t => t.Progress).Count() == 0? 0 : tasks.Select(t => t.Progress).Sum() / tasks.Select(t => t.Progress).Count()
+                ProjectProgress = !tasks.Any()? 0 : tasks.Select(t => t.Progress).Sum() / tasks.Select(t => t.Progress).Count()
             };
 
             ViewData["Statuses"] = Enum.GetNames(typeof(Models.StatusEnum));
@@ -78,13 +79,9 @@ namespace ProjectManager.Controllers
         public async Task<IActionResult> Create([Bind("ProjectCode,ProjectName,Manager")] ProjectManager.Models.Project project)
         {
             if (ModelState.IsValid)
-            {
-                if(project.Manager != null)
-                {
-                    var projectManager = _userManager.FindByIdAsync(project.Manager.Id).Result;
+            { 
+                 var projectManager = _userManager.FindByIdAsync(project.Manager.Id).Result;
                     project.Manager = projectManager;
-                }
-                
                 _context.Add(project);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -106,6 +103,7 @@ namespace ProjectManager.Controllers
             {
                 return NotFound();
             }
+            ViewBag.Users = _userManager.GetUsersInRoleAsync("ProjectManager").Result;
             return View(project);
         }
 
@@ -115,7 +113,7 @@ namespace ProjectManager.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ProjectCode,ProjectName")] ProjectManager.Models.Project project)
+        public async Task<IActionResult> Edit(int id, [Bind("ProjectCode,ProjectName,Manager")] ProjectManager.Models.Project project)
         {
             if (id != project.ProjectCode)
             {
@@ -126,6 +124,11 @@ namespace ProjectManager.Controllers
             {
                 try
                 {
+                    if (project.Manager != null)
+                    {
+                        var projectManager = _userManager.FindByNameAsync(project.Manager.UserName).Result;
+                        project.Manager = projectManager;
+                    }
                     _context.Update(project);
                     await _context.SaveChangesAsync();
                 }
